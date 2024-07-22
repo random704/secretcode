@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Guessing Game</title>
+</head>
+<body>
+    <h2>Enter a 7-letter Code:</h2>
+    <input type="text" id="codeInput" maxlength="7">
+    <button onclick="checkCode()">Submit</button>
+
+    <div id="gameContainer" style="display: none;">
+        <h3>Pac-Man Game</h3>
+        <iframe id="pacmanGame" width="100%" height="400" src="https://www.google.com/logos/2010/pacman/pacman.html" frameborder="0"></iframe>
+    </div>
+
+    <h2>Submit Your Own Code:</h2>
+    <form id="submitForm">
+        <label for="newCode">Enter a new 7-letter code:</label>
+        <input type="text" id="newCode" maxlength="7" required>
+        <br>
+        <label for="redirectUrl">Enter the URL to redirect:</label>
+        <input type="url" id="redirectUrl" required>
+        <button type="submit">Submit Code</button>
+    </form>
+
+    <script>
+        var codes = {
+            "code123": "https://www.example.com/redirect1",
+            "abc4567": "https://www.example.com/redirect2",
+            "xyz7890": "https://www.example.com/redirect3",
+            "qwerty1": "https://www.example.com/redirect4",
+            "asdfgh2": "https://www.example.com/redirect5",
+            "doritos": "https://www.youtube.com/watch?v=C9i5SUDWls0",
+            "hungry": "https://www.mcdonalds.com/us/en-us.html",
+            "pacman1": "game", // This code triggers the Pac-Man game
+            "youtube1": "https://www.youtube.com/watch?v=060D_zM9PJI" // This code triggers redirection to a YouTube video
+        };
+
+        var bannedUsers = []; // Array to store banned users
+
+        // Function to handle form submission
+        document.getElementById('submitForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var newCode = document.getElementById('newCode').value.toLowerCase(); // Convert to lowercase for consistency
+            var redirectUrl = document.getElementById('redirectUrl').value.trim(); // Get the entered URL
+
+            if (newCode.length === 7 && !codes.hasOwnProperty(newCode)) {
+                // Add the new code to the codes object with the specified redirect URL
+                codes[newCode] = redirectUrl;
+                alert("Code successfully submitted!");
+                // Optionally, clear the form after submission
+                document.getElementById('newCode').value = "";
+                document.getElementById('redirectUrl').value = "";
+            } else {
+                alert("Invalid code or code already exists. Please enter a unique 7-letter code.");
+            }
+        });
+
+        // Function to check entered code
+        function checkCode() {
+            var input = document.getElementById('codeInput').value.toLowerCase(); // Convert to lowercase for case insensitivity
+
+            if (codes.hasOwnProperty(input)) {
+                if (input === "pacman1") {
+                    document.getElementById('gameContainer').style.display = 'block'; // Show the game container
+                } else if (input === "youtube1") {
+                    // Redirect to YouTube video
+                    window.location.href = codes[input];
+                    // Ban the user for 3 days
+                    var bannedUntil = new Date();
+                    bannedUntil.setDate(bannedUntil.getDate() + 3); // Ban for 3 days
+                    bannedUsers.push({
+                        user: input,
+                        bannedUntil: bannedUntil
+                    });
+                    // Inform user about the ban
+                    alert("You have been banned from the website for 3 days.");
+                    // Optionally, clear the input field after ban
+                    document.getElementById('codeInput').value = "";
+                } else {
+                    window.location.href = codes[input]; // Redirect to the specified URL for other codes
+                }
+            } else {
+                alert("Invalid code. Please try again.");
+            }
+        }
+
+        // Function to check if user is banned
+        function isUserBanned() {
+            var input = document.getElementById('codeInput').value.toLowerCase();
+            var bannedUser = bannedUsers.find(user => user.user === input);
+            if (bannedUser && new Date() < new Date(bannedUser.bannedUntil)) {
+                alert("You are currently banned from the website. Please try again after 3 days.");
+                return true;
+            }
+            return false;
+        }
+
+        // Check if user is banned before processing code
+        document.getElementById('codeInput').addEventListener('keyup', function(event) {
+            if (event.keyCode === 13) { // Check if Enter key is pressed
+                if (!isUserBanned()) {
+                    checkCode();
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
